@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-slate-950 text-slate-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Generador de Voz Neuronal • Dominio Puebla</title>
+  
+  <!-- Meta para PWA en Android y Windows -->
+  <meta name="theme-color" content="#0f172a">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="/static/manifest.json">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    /* Estilizar scrollbars */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+  </style>
+</head>
+<body class="min-h-full flex flex-col bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 pb-12">
+
+  <!-- Header -->
+  <header class="border-b border-slate-800/80 bg-slate-900/60 backdrop-blur sticky top-0 z-30">
+    <div class="max-w-4xl mx-auto px-4 py-3.5 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z" />
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-base font-bold text-white tracking-tight flex items-center gap-2">
+            Voz Neuronal Studio
+            <span class="text-[10px] uppercase font-semibold px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">100% Gratis</span>
+          </h1>
+          <p class="text-xs text-slate-400">Dominio Puebla • Compatible con Windows 11 y Android</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="btn-mobile-qr" class="inline-flex items-center gap-1.5 text-xs text-indigo-300 bg-indigo-500/15 hover:bg-indigo-500/25 px-3 py-1.5 rounded-xl border border-indigo-500/30 transition shadow-sm">
+          <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+          </svg>
+          <span>Abrir en Android</span>
+        </button>
+        <span class="hidden sm:inline-flex items-center gap-1.5 text-xs text-emerald-400 bg-emerald-500/10 px-2.5 py-1.5 rounded-xl border border-emerald-500/20">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          Edge Neural Activo
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Contenedor Principal -->
+  <main class="flex-1 max-w-4xl w-full mx-auto px-4 py-6 space-y-6">
+
+    <!-- Tarjeta de Selección de Voz -->
+    <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-5 shadow-xl backdrop-blur-sm">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-sm font-semibold text-slate-200 flex items-center gap-2">
+          <span>🎙️</span> Selecciona el Estilo de Voz
+        </h2>
+        <span class="text-xs text-slate-400">Sin límites de uso</span>
+      </div>
+
+      <!-- Presets de Voces -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3" id="presets-container">
+        <!-- Renderizado dinámicamente con JavaScript -->
+      </div>
+
+      <!-- Acordeón para catálogo completo -->
+      <div class="mt-4 pt-4 border-t border-slate-800/80">
+        <button id="toggle-all-voices" class="w-full flex items-center justify-between text-xs text-slate-400 hover:text-indigo-400 transition py-1">
+          <span class="flex items-center gap-1.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+            ¿Prefieres otra región o país? Ver todas las voces en español
+          </span>
+          <span class="text-[11px] bg-slate-800 px-2 py-0.5 rounded text-slate-300" id="total-voices-count">Cargando...</span>
+        </button>
+
+        <div id="all-voices-panel" class="hidden mt-3">
+          <select id="all-voices-select" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
+            <option value="">-- Selecciona una voz del catálogo general --</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tarjeta de Texto y Guión -->
+    <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-5 shadow-xl backdrop-blur-sm space-y-4">
+      <div class="flex items-center justify-between">
+        <h2 class="text-sm font-semibold text-slate-200 flex items-center gap-2">
+          <span>✍️</span> Guión o Texto a Sintetizar
+        </h2>
+        <!-- Indicador de duración estimada -->
+        <div class="flex items-center gap-2">
+          <span id="duration-badge" class="text-xs px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700/60 font-medium">
+            ⏱️ ~0 seg
+          </span>
+        </div>
+      </div>
+
+      <div class="relative">
+        <textarea id="text-input" rows="4" 
+          placeholder="Escribe o pega aquí el texto para tu audio. Por ejemplo: 'Bienvenidos a Dominio Puebla. Hoy les presentamos una gran oportunidad para su patrimonio...'"
+          class="w-full bg-slate-950/80 border border-slate-700/80 rounded-xl p-3.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition resize-y"></textarea>
+      </div>
+
+      <!-- Barra de herramientas inferior del texto -->
+      <div class="flex flex-wrap items-center justify-between gap-2 pt-1 text-xs text-slate-400">
+        <div class="flex items-center gap-3">
+          <span id="char-counter">0 caracteres</span>
+          <span>•</span>
+          <span id="word-counter">0 palabras</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="btn-sample-10s" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-slate-700 transition">
+            Ejemplo 10s (Stamp Video)
+          </button>
+          <button id="btn-clear" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition">
+            Limpiar
+          </button>
+        </div>
+      </div>
+
+      <!-- Ajustes de Modulación (Velocidad y Tono) -->
+      <div class="pt-3 border-t border-slate-800/80 grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <div class="flex justify-between text-xs text-slate-300 mb-1">
+            <span class="flex items-center gap-1">⚡ Velocidad (Ritmo):</span>
+            <span id="rate-value" class="font-mono text-indigo-400 font-semibold">+30%</span>
+          </div>
+          <input id="rate-slider" type="range" min="-30" max="50" value="30" step="1" 
+            class="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500">
+          <div class="flex justify-between text-[10px] text-slate-500 mt-1">
+            <span>Pausado (-30%)</span>
+            <span>Normal (0%)</span>
+            <span>Rápido (+50%)</span>
+          </div>
+        </div>
+
+        <div>
+          <div class="flex justify-between text-xs text-slate-300 mb-1">
+            <span class="flex items-center gap-1">🎵 Tono (Grave / Agudo):</span>
+            <span id="pitch-value" class="font-mono text-indigo-400 font-semibold">+6Hz</span>
+          </div>
+          <input id="pitch-slider" type="range" min="-15" max="15" value="6" step="1" 
+            class="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500">
+          <div class="flex justify-between text-[10px] text-slate-500 mt-1">
+            <span>Más Grave (-15Hz)</span>
+            <span>Natural (0Hz)</span>
+            <span>Más Agudo (+15Hz)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botón Principal Generar -->
+      <div class="pt-2">
+        <button id="btn-generate" 
+          class="w-full py-3.5 px-6 rounded-xl font-semibold text-white bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-600 hover:from-indigo-500 hover:to-violet-500 active:scale-[0.99] transition shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2">
+          <svg id="generate-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span id="generate-text">Generar Audio Neuronal</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Reproductor y Descarga (Aparece al generar) -->
+    <div id="player-card" class="hidden bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 border border-indigo-500/30 rounded-2xl p-5 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+          <h3 class="text-sm font-semibold text-white">Audio Listo</h3>
+          <span id="player-size-badge" class="text-[11px] px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-mono">42 KB</span>
+        </div>
+        <span id="player-voice-badge" class="text-xs text-slate-400 font-medium">Profesor Jorge</span>
+      </div>
+
+      <!-- Audio HTML5 nativo -->
+      <div class="w-full">
+        <audio id="audio-element" controls class="w-full rounded-lg bg-slate-950"></audio>
+      </div>
+
+      <!-- Botones de Acción -->
+      <div class="flex flex-col sm:flex-row gap-3 pt-1">
+        <a id="btn-download" href="#" download="voz_profesor.mp3"
+          class="flex-1 py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-[0.99] text-white font-semibold text-center flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          </svg>
+          Descargar Audio MP3
+        </a>
+      </div>
+    </div>
+
+    <!-- Historial de Clips Recientes -->
+    <div id="history-section" class="hidden bg-slate-900/50 border border-slate-800 rounded-2xl p-5 shadow-lg">
+      <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3 flex items-center gap-2">
+        <span>🕒</span> Clips Generados en esta Sesión
+      </h3>
+      <div id="history-list" class="space-y-2.5">
+        <!-- Renderizado dinámicamente -->
+      </div>
+    </div>
+
+    <!-- Guía Informativa sobre Consumo y HostGator -->
+    <div class="bg-slate-900/40 border border-slate-800/60 rounded-xl p-4 text-xs text-slate-400 space-y-2">
+      <div class="font-semibold text-slate-300 flex items-center gap-1.5">
+        <span>💡</span> Información sobre Datos y Alojamiento:
+      </div>
+      <p>
+        • <strong>Consumo de datos</strong>: Generar 1 clip de 10 segundos consume apenas <strong>~40 KB</strong> (0.04 MB). Generar 1,000 audios requiere menos de 50 MB en total. El impacto en tu ancho de banda es completamente imperceptible.
+      </p>
+      <p>
+        • <strong>Conexión desde Android</strong>: Abre este enlace en el navegador de tu celular cuando estés en la misma red Wi-Fi y pulsa <em>"Añadir a pantalla de inicio"</em> para tenerlo como app nativa.
+      </p>
+    </div>
+
+    <!-- Modal QR Móvil -->
+    <div id="qr-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+      <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-sm w-full p-6 text-center shadow-2xl relative">
+        <button id="btn-close-qr" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+        <div class="w-12 h-12 mx-auto mb-3 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+        </div>
+        <h3 class="text-base font-bold text-white mb-1">Abrir en tu Android</h3>
+        <p class="text-xs text-slate-400 mb-4">Escanea este código con la cámara de tu celular (conectado al mismo Wi-Fi):</p>
+        <div class="bg-white p-3 rounded-xl inline-block shadow-inner mb-4">
+          <img id="qr-image" src="" alt="Código QR" class="w-44 h-44 object-contain">
+        </div>
+        <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-xs font-mono text-indigo-300 select-all" id="mobile-url-display">
+          http://...
+        </div>
+        <p class="text-[11px] text-slate-500 mt-3">
+          💡 En Chrome de Android, pulsa los 3 puntos y selecciona <strong>"Añadir a pantalla de inicio"</strong> para instalarlo como App.
+        </p>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    // Variables de estado
+    let selectedVoiceId = 'es-US-AlonsoNeural';
+    let availablePresets = [];
+    let allVoicesList = [];
+    const historyItems = [];
+
+    // Elementos DOM
+    const presetsContainer = document.getElementById('presets-container');
+    const toggleAllVoicesBtn = document.getElementById('toggle-all-voices');
+    const allVoicesPanel = document.getElementById('all-voices-panel');
+    const allVoicesSelect = document.getElementById('all-voices-select');
+    const totalVoicesCount = document.getElementById('total-voices-count');
+    
+    const textInput = document.getElementById('text-input');
+    const charCounter = document.getElementById('char-counter');
+    const wordCounter = document.getElementById('word-counter');
+    const durationBadge = document.getElementById('duration-badge');
+    const btnSample10s = document.getElementById('btn-sample-10s');
+    const btnClear = document.getElementById('btn-clear');
+    
+    const rateSlider = document.getElementById('rate-slider');
+    const rateValue = document.getElementById('rate-value');
+    const pitchSlider = document.getElementById('pitch-slider');
+    const pitchValue = document.getElementById('pitch-value');
+    
+    const btnGenerate = document.getElementById('btn-generate');
+    const generateIcon = document.getElementById('generate-icon');
+    const generateText = document.getElementById('generate-text');
+    
+    const playerCard = document.getElementById('player-card');
+    const audioElement = document.getElementById('audio-element');
+    const playerSizeBadge = document.getElementById('player-size-badge');
+    const playerVoiceBadge = document.getElementById('player-voice-badge');
+    const btnDownload = document.getElementById('btn-download');
+    
+    const historySection = document.getElementById('history-section');
+    const historyList = document.getElementById('history-list');
+
+    // Cargar catálogo de voces al iniciar
+    async function loadVoices() {
+      try {
+        const resp = await fetch('/api/voices');
+        const data = await resp.json();
+        if (data.status === 'success') {
+          availablePresets = data.presets || [];
+          allVoicesList = data.all_spanish || [];
+          renderPresets();
+          renderAllVoices();
+        }
+      } catch (err) {
+        console.error('Error cargando voces:', err);
+      }
+    }
+
+    // Renderizar tarjetas de voces preset
+    function renderPresets() {
+      presetsContainer.innerHTML = '';
+      availablePresets.forEach(v => {
+        const isSelected = v.id === selectedVoiceId;
+        const card = document.createElement('div');
+        card.className = `cursor-pointer p-3.5 rounded-xl border transition flex flex-col justify-between ${
+          isSelected 
+            ? 'bg-indigo-600/10 border-indigo-500 shadow-md shadow-indigo-500/10' 
+            : 'bg-slate-950/60 border-slate-800 hover:border-slate-700'
+        }`;
+        card.onclick = () => selectPresetVoice(v);
+
+        card.innerHTML = `
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-xs font-bold ${isSelected ? 'text-indigo-400' : 'text-slate-200'}">${v.name}</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded ${isSelected ? 'bg-indigo-500/20 text-indigo-300' : 'bg-slate-800 text-slate-400'}">${v.country}</span>
+            </div>
+            <p class="text-[11px] text-slate-400 line-clamp-2 leading-relaxed">${v.description}</p>
+          </div>
+          <div class="mt-2.5 pt-2 border-t border-slate-800/60 flex items-center justify-between">
+            <span class="text-[10px] text-slate-500">${v.tag}</span>
+            <span class="text-xs ${isSelected ? 'text-indigo-400 font-bold' : 'text-slate-600'}">
+              ${isSelected ? '✓ Seleccionada' : 'Elegir'}
+            </span>
+          </div>
+        `;
+        presetsContainer.appendChild(card);
+      });
+    }
+
+    // Seleccionar una voz preset
+    function selectPresetVoice(v) {
+      selectedVoiceId = v.id;
+      if (v.defaultRate) {
+        rateSlider.value = parseInt(v.defaultRate);
+        rateValue.textContent = v.defaultRate;
+      }
+      if (v.defaultPitch) {
+        pitchSlider.value = parseInt(v.defaultPitch);
+        pitchValue.textContent = v.defaultPitch;
+      }
+      renderPresets();
+      allVoicesSelect.value = '';
+    }
+
+    // Renderizar catálogo completo en el select
+    function renderAllVoices() {
+      totalVoicesCount.textContent = `${allVoicesList.length} voces`;
+      allVoicesSelect.innerHTML = '<option value="">-- Selecciona otra voz del catálogo general --</option>';
+      allVoicesList.forEach(v => {
+        const opt = document.createElement('option');
+        opt.value = v.id;
+        opt.textContent = `[${v.country}] ${v.name} (${v.gender}) - ${v.id}`;
+        allVoicesSelect.appendChild(opt);
+      });
+    }
+
+    // Toggle acordeón de todas las voces
+    toggleAllVoicesBtn.onclick = () => {
+      allVoicesPanel.classList.toggle('hidden');
+    };
+
+    allVoicesSelect.onchange = (e) => {
+      if (e.target.value) {
+        selectedVoiceId = e.target.value;
+        renderPresets(); // Desmarcar presets
+      }
+    };
+
+    // Actualizar contadores y cálculo estimado de duración
+    function updateCounters() {
+      const text = textInput.value.trim();
+      const chars = text.length;
+      const words = text ? text.split(/\s+/).length : 0;
+      
+      charCounter.textContent = `${chars} caracteres`;
+      wordCounter.textContent = `${words} palabras`;
+
+      // Cálculo promedio: en español se leen ~140 palabras por minuto (~2.3 palabras por segundo)
+      const estimatedSecs = Math.max(1, Math.round(words / 2.3));
+      
+      if (words === 0) {
+        durationBadge.textContent = '⏱️ ~0 seg';
+        durationBadge.className = 'text-xs px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700/60 font-medium';
+      } else if (estimatedSecs <= 12) {
+        durationBadge.textContent = `⏱️ ~${estimatedSecs} seg (Ideal clip Stamp Video)`;
+        durationBadge.className = 'text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold';
+      } else {
+        durationBadge.textContent = `⏱️ ~${estimatedSecs} seg`;
+        durationBadge.className = 'text-xs px-2.5 py-1 rounded-full bg-indigo-500/10 text-indigo-300 border border-indigo-500/30 font-medium';
+      }
+    }
+
+    textInput.addEventListener('input', updateCounters);
+
+    // Botones rápidos de texto
+    btnSample10s.onclick = () => {
+      textInput.value = "¡Atención inversionistas! Descubre esta increíble propiedad en Dominio Puebla con financiamiento directo y plusvalía garantizada.";
+      updateCounters();
+      textInput.focus();
+    };
+
+    btnClear.onclick = () => {
+      textInput.value = '';
+      updateCounters();
+      textInput.focus();
+    };
+
+    // Sliders de velocidad y tono
+    rateSlider.oninput = (e) => {
+      const val = parseInt(e.target.value);
+      rateValue.textContent = (val > 0 ? `+${val}%` : `${val}%`);
+    };
+
+    pitchSlider.oninput = (e) => {
+      const val = parseInt(e.target.value);
+      pitchValue.textContent = (val > 0 ? `+${val}Hz` : `${val}Hz`);
+    };
+
+    // Generar Audio
+    btnGenerate.onclick = async () => {
+      const text = textInput.value.trim();
+      if (!text) {
+        alert('Por favor escribe algún texto antes de generar el audio.');
+        textInput.focus();
+        return;
+      }
+
+      const rate = (parseInt(rateSlider.value) >= 0 ? `+${rateSlider.value}%` : `${rateSlider.value}%`);
+      const pitch = (parseInt(pitchSlider.value) >= 0 ? `+${pitchSlider.value}Hz` : `${pitchSlider.value}Hz`);
+
+      // Estado de carga
+      btnGenerate.disabled = true;
+      btnGenerate.classList.add('opacity-75', 'cursor-not-allowed');
+      generateText.textContent = 'Sintetizando voz neuronal...';
+      generateIcon.innerHTML = `
+        <svg class="animate-spin w-5 h-5 text-white" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+        </svg>
+      `;
+
+      try {
+        const resp = await fetch('/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text: text,
+            voice: selectedVoiceId,
+            rate: rate,
+            pitch: pitch
+          })
+        });
+
+        const data = await resp.json();
+        if (data.status === 'success') {
+          // Mostrar reproductor
+          playerCard.classList.remove('hidden');
+          audioElement.src = data.url;
+          audioElement.play().catch(() => {}); // Auto reproducción si el navegador lo permite
+          playerSizeBadge.textContent = `${data.size_kb} KB`;
+          playerVoiceBadge.textContent = data.voice.split('-').slice(1).join(' ').replace('Neural', '');
+          
+          btnDownload.href = data.url;
+          btnDownload.download = `voz_${data.voice.split('-')[2] || 'clip'}_${Date.now()}.mp3`;
+
+          // Agregar al historial
+          addToHistory(data, text);
+
+          // Scroll suave hacia el reproductor
+          playerCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } else {
+          alert('Error al generar audio: ' + (data.message || 'Error desconocido'));
+        }
+      } catch (err) {
+        alert('Error de conexión con el servidor de síntesis: ' + err.message);
+      } finally {
+        btnGenerate.disabled = false;
+        btnGenerate.classList.remove('opacity-75', 'cursor-not-allowed');
+        generateText.textContent = 'Generar Audio Neuronal';
+        generateIcon.innerHTML = `
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        `;
+      }
+    };
+
+    // Historial
+    function addToHistory(item, fullText) {
+      historySection.classList.remove('hidden');
+      const div = document.createElement('div');
+      div.className = 'flex items-center justify-between p-3 rounded-xl bg-slate-950/70 border border-slate-800 text-xs';
+      div.innerHTML = `
+        <div class="flex-1 mr-3 truncate">
+          <div class="font-medium text-slate-200 truncate">${fullText}</div>
+          <div class="text-[10px] text-slate-400 mt-0.5">${item.voice} • ${item.size_kb} KB</div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="playHistory('${item.url}')" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-indigo-300 transition">
+            ▶ Escuchar
+          </button>
+          <a href="${item.url}" download class="px-2.5 py-1 rounded bg-emerald-600/20 text-emerald-300 hover:bg-emerald-600/30 transition">
+            ⬇
+          </a>
+        </div>
+      `;
+      historyList.prepend(div);
+    }
+
+    function playHistory(url) {
+      audioElement.src = url;
+      audioElement.play();
+    }
+
+    // Inicializar
+    loadVoices();
+    updateCounters();
+
+    // Lógica Modal QR
+    const btnMobileQr = document.getElementById('btn-mobile-qr');
+    const qrModal = document.getElementById('qr-modal');
+    const btnCloseQr = document.getElementById('btn-close-qr');
+    const qrImage = document.getElementById('qr-image');
+    const mobileUrlDisplay = document.getElementById('mobile-url-display');
+
+    async function openQrModal() {
+      try {
+        const resp = await fetch('/api/info');
+        const data = await resp.json();
+        if (data.status === 'success') {
+          const mobileUrl = data.mobile_url;
+          mobileUrlDisplay.textContent = mobileUrl;
+          qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(mobileUrl)}`;
+          qrModal.classList.remove('hidden');
+        }
+      } catch (err) {
+        console.error('Error info red:', err);
+      }
+    }
+
+    btnMobileQr.onclick = openQrModal;
+    btnCloseQr.onclick = () => qrModal.classList.add('hidden');
+    qrModal.onclick = (e) => {
+      if (e.target === qrModal) qrModal.classList.add('hidden');
+    };
+  </script>
+</body>
+</html>

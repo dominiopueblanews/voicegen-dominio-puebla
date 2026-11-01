@@ -1,0 +1,2 @@
+aiohttp==3.11.11
+edge-tts==7.3.1
