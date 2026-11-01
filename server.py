@@ -13,6 +13,9 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 OUTPUT_DIR = os.path.join(BASE_DIR, "generated_audio")
 STATIC_DIR = os.path.join(BASE_DIR, "static")
 
+# Clave Maestra de Seguridad Privada de Dominio Puebla
+AUTH_KEY = os.environ.get("VOICE_API_KEY", "Voz.Desde.Puebla.2o26.")
+
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 os.makedirs(STATIC_DIR, exist_ok=True)
 
@@ -87,7 +90,7 @@ async def cors_middleware(request, handler):
             
     response.headers["Access-Control-Allow-Origin"] = "*"
     response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
-    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With, X-Api-Key"
     return response
 
 async def handle_voices(request):
@@ -114,9 +117,25 @@ async def handle_voices(request):
         return web.json_response({"status": "error", "message": str(e)}, status=500)
 
 async def handle_generate(request):
-    """Genera audio con Edge-TTS a partir de texto y parámetros"""
+    """Genera audio con Edge-TTS a partir de texto y parámetros con autenticación de clave"""
+    # 1. Verificación de Seguridad Privada (X-Api-Key en header o auth_key en JSON)
+    api_key_header = request.headers.get("X-Api-Key") or request.headers.get("Authorization", "").replace("Bearer ", "").strip()
+    
     try:
         data = await request.json()
+    except Exception:
+        data = {}
+
+    api_key_body = data.get("auth_key") or data.get("key")
+    client_key = api_key_header or api_key_body
+
+    if client_key != AUTH_KEY:
+        return web.json_response({
+            "status": "error",
+            "message": "Acceso no autorizado. Clave de seguridad privada inválida o ausente."
+        }, status=401)
+
+    try:
         text = data.get("text", "").strip()
         voice = data.get("voice", "es-US-AlonsoNeural")
         rate = data.get("rate", "+30%")
@@ -125,6 +144,10 @@ async def handle_generate(request):
 
         if not text:
             return web.json_response({"status": "error", "message": "El texto no puede estar vacío."}, status=400)
+
+        # Límite de seguridad para evitar abusos o sobrecarga
+        if len(text) > 3500:
+            return web.json_response({"status": "error", "message": "El texto excede el límite máximo de 3500 caracteres."}, status=400)
 
         # Generar nombre de archivo único
         file_id = f"audio_{int(time.time())}_{uuid.uuid4().hex[:6]}.mp3"
